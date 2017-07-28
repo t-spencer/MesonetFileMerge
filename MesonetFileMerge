@@ -1,0 +1,30 @@
+__author__ = "Trent Spencer '17"
+__version__ = '2.0'
+
+from os import listdir
+import pandas as pd
+
+print("\n Mesonet Data File Merge Script \n Author: Trent Spencer '17 \n Note: Make sure that only the files you want to merge are in the folder you list! \n")
+Response = input('Enter directory where files are (absolute or relative to script location): ')
+Output = input('Enter Merged Filename (without the .csv): ')
+FileList = listdir(Response)
+i = 0
+for file in FileList:
+    if i == 0:
+        if file[-3:] == 'xls':
+            BaseFile = pd.read_excel(Response + '\\' + file, parse_dates=[0], header = 0, skiprows= [0,2,3], index_col='TIMESTAMP')
+            i = 1
+        else:
+            BaseFile = pd.read_csv(Response + '\\' + file, parse_dates=[0], header = 0, skiprows= [0,2,3], index_col='TIMESTAMP')
+            i = 1
+    else:
+        if file[-3:] == 'xls':
+            ExF = pd.read_excel(Response + '\\' + file, parse_dates=[0], header = 0, skiprows= [0,2,3], index_col='TIMESTAMP')
+            BaseFile = pd.concat([BaseFile, ExF])
+        else:
+            CsF = pd.read_csv(Response + '\\' + file, parse_dates=[0], header = 0, skiprows= [0,2,3], index_col='TIMESTAMP')
+            BaseFile = pd.concat([BaseFile, CsF])
+
+BaseFile = BaseFile.sort_index()
+BaseFile = BaseFile.drop_duplicates()
+BaseFile.to_csv(Output + '.csv', header = True)
